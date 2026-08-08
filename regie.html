@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Régie — Mariage</title>
+<link rel="stylesheet" href="regie.css">
+</head>
+<body>
+
+<h1>🎤 Régie</h1>
+<div class="status" id="status">Connexion...</div>
+
+<section>
+  <label>Étape en cours</label>
+  <div class="etapes-grid" id="etapesGrid"></div>
+</section>
+
+<section>
+  <label>Message rapide vers l'affichage</label>
+  <textarea id="messageInput" placeholder="Ex: retard 10 min, micro HS..."></textarea>
+  <button class="send-btn" onclick="envoyerMessage()">Envoyer le message</button>
+  <div class="current-msg" id="currentMsgDisplay"></div>
+</section>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const statusEl = document.getElementById("status");
+  onValue(ref(db, ".info/connected"), (snap) => {
+    if (snap.val() === true) {
+      statusEl.textContent = "✓ Connecté";
+      statusEl.classList.add("connected");
+    } else {
+      statusEl.textContent = "Connexion...";
+      statusEl.classList.remove("connected");
+    }
+  });
+
+  // Liste des étapes : à adapter selon le déroulé réel du mariage
+  const ETAPES = [
+    "Accueil",
+    "Cérémonie",
+    "Vin d'honneur",
+    "Photos",
+    "Discours",
+    "Repas",
+    "Gâteau",
+    "Ouverture du bal",
+    "Soirée dansante",
+    "Fin"
+  ];
+
+  const grid = document.getElementById("etapesGrid");
+  ETAPES.forEach(etape => {
+    const btn = document.createElement("button");
+    btn.className = "etape-btn";
+    btn.textContent = etape;
+    btn.onclick = () => setEtape(etape, btn);
+    grid.appendChild(btn);
+  });
+
+  function setEtape(etape, btnEl) {
+    set(ref(db, "etape"), {
+      valeur: etape,
+      timestamp: Date.now()
+    });
+    document.querySelectorAll(".etape-btn").forEach(b => b.classList.remove("active"));
+    btnEl.classList.add("active");
+  }
+
+  // Pré-sélectionner le bouton actif si on recharge la page
+  onValue(ref(db, "etape/valeur"), (snap) => {
+    const val = snap.val();
+    if (!val) return;
+    document.querySelectorAll(".etape-btn").forEach(b => {
+      b.classList.toggle("active", b.textContent === val);
+    });
+  });
+
+  window.envoyerMessage = () => {
+    const input = document.getElementById("messageInput");
+    const texte = input.value.trim();
+    if (!texte) return;
+    set(ref(db, "message"), {
+      valeur: texte,
+      timestamp: Date.now()
+    });
+    input.value = "";
+  };
+
+  onValue(ref(db, "message/valeur"), (snap) => {
+    const val = snap.val();
+    document.getElementById("currentMsgDisplay").textContent = val ? "Dernier message envoyé : " + val : "";
+  });
+</script>
+
+</body>
+</html>

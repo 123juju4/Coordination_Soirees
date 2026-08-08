@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affichage — Mariage</title>
+<link rel="stylesheet" href="affichage.css">
+</head>
+<body>
+
+<div class="status" id="status">Connexion...</div>
+
+<div>
+  <div class="label">Étape en cours</div>
+  <div class="etape" id="etapeDisplay">—</div>
+</div>
+
+<div class="message-box empty" id="messageDisplay">Aucun message</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const statusEl = document.getElementById("status");
+  onValue(ref(db, ".info/connected"), (snap) => {
+    if (snap.val() === true) {
+      statusEl.textContent = "✓ Connecté";
+      statusEl.classList.add("connected");
+    } else {
+      statusEl.textContent = "Connexion...";
+      statusEl.classList.remove("connected");
+    }
+  });
+
+  onValue(ref(db, "etape/valeur"), (snap) => {
+    const val = snap.val();
+    document.getElementById("etapeDisplay").textContent = val || "—";
+  });
+
+  onValue(ref(db, "message/valeur"), (snap) => {
+    const val = snap.val();
+    const box = document.getElementById("messageDisplay");
+    if (val) {
+      box.textContent = val;
+      box.classList.remove("empty");
+    } else {
+      box.textContent = "Aucun message";
+      box.classList.add("empty");
+    }
+  });
+</script>
+
+</body>
+</html>
