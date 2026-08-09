@@ -18,12 +18,29 @@
 <div class="message-box empty" id="messageDisplay">Aucun message</div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  import { firebaseConfig } from "./firebase-config.js";
+  const statusElEarly = document.getElementById("status");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  let firebaseConfig, initializeApp, getDatabase, ref, onValue;
+  try {
+    const mod = await import("./firebase-config.js");
+    firebaseConfig = mod.firebaseConfig;
+    ({ initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"));
+    ({ getDatabase, ref, onValue } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"));
+  } catch (e) {
+    statusElEarly.textContent = "Erreur de chargement : " + e.message;
+    statusElEarly.style.color = "#ff6b6b";
+    throw e;
+  }
+
+  let app, db;
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+  } catch (e) {
+    statusElEarly.textContent = "Erreur config Firebase : " + e.message;
+    statusElEarly.style.color = "#ff6b6b";
+    throw e;
+  }
 
   const statusEl = document.getElementById("status");
   onValue(ref(db, ".info/connected"), (snap) => {
