@@ -2,11 +2,12 @@
 // Tu les trouves dans : Console Firebase > Paramètres du projet > Général > "Vos applications" > Config SDK
 
 export const firebaseConfig = {
-  apiKey: "TON_API_KEY",
-  authDomain: "TON_PROJET.firebaseapp.com",
-  databaseURL: "https://TON_PROJET-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "TON_PROJET",
-  storageBucket: "TON_PROJET.appspot.com",
-  messagingSenderId: "TON_SENDER_ID",
-  appId: "TON_APP_ID"
+  apiKey: "AIzaSyAXfYtkvzF_77voKv-BinvFFaTGPo7jRTk",
+  authDomain: "coordination-soirees.firebaseapp.com",
+  databaseURL: "https://coordination-soirees-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "coordination-soirees",
+  storageBucket: "coordination-soirees.firebasestorage.app",
+  messagingSenderId: "126357785769",
+  appId: "1:126357785769:web:53eef7919457ce052d2db8",
+  measurementId: "G-KSSWRFGVSH"
 };
