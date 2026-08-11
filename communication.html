@@ -30,7 +30,7 @@
   <button class="switch-user" id="switchUser">Changer</button>
   <a href="sono.html" class="send-btn sono-link hidden" id="sonoLink">🎛️ Réglages sono</a>
 
-  <div class="historique-wrap">
+  <div class="historique-wrap hidden" id="historiqueWrap">
     <div class="historique" id="historique"></div>
   </div>
 
@@ -169,6 +169,11 @@
     // Le lien "Réglages sono" n'apparaît que sur la page de Freddy
     if (moi === "freddy") {
       document.getElementById("sonoLink").classList.remove("hidden");
+    }
+
+    // L'historique des commandes sono n'a de sens que sur la page de Julien
+    if (moi === "julien") {
+      document.getElementById("historiqueWrap").classList.remove("hidden");
     }
 
     // Historique quand l'autre personne appuie sur un bouton de la page sono (commande)
