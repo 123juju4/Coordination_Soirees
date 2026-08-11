@@ -340,7 +340,7 @@ textarea::placeholder { color: #3f7a48; }
    RESPONSIVE — écran large (ordinateur / tablette)
    Le mobile ci-dessus reste inchangé (empilé, compact).
    ========================================================= */
-@media (min-width: 1600px) {
+@media (min-width: 1400px) {
   body {
     width: 100%;
     max-width: none;
