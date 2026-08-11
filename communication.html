@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Communication — Mariage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="communication.css">
+</head>
+<body>
+
+<!-- Écran de code d'accès, affiché une seule fois -->
+<div id="codeScreen" class="identity-screen">
+  <h2>Code d'accès</h2>
+  <input type="tel" id="codeInput" class="code-input" maxlength="4" placeholder="••••" inputmode="numeric">
+  <button class="identity-btn" id="codeSubmit">Valider</button>
+  <div class="code-error hidden" id="codeError">Code incorrect</div>
+</div>
+
+<!-- Écran de sélection d'identité, affiché une seule fois -->
+<div id="identityScreen" class="identity-screen hidden">
+  <h2>Tu es qui ?</h2>
+  <button class="identity-btn" data-id="julien">Julien</button>
+  <button class="identity-btn" data-id="freddy">Freddy</button>
+</div>
+
+<div id="mainApp" class="main-app hidden">
+  <div class="status" id="status">Connexion...</div>
+  <button class="switch-user" id="switchUser">Changer</button>
+  <a href="sono.html" class="send-btn sono-link hidden" id="sonoLink">🎛️ Réglages sono</a>
+
+  <div class="toast" id="toast"></div>
+
+  <h1>Envoi</h1>
+  <div class="btn-grid">
+    <button class="action-btn yellow" data-val="prepare">Prépare-toi</button>
+    <button class="action-btn green" data-val="go">GO</button>
+    <button class="action-btn red" data-val="stop">STOP</button>
+    <button class="action-btn red" data-val="pasPret">Pas Prêt</button>
+    <div></div>
+    <button class="action-btn green" data-val="pret">Prêt</button>
+  </div>
+  <textarea id="messageInput" placeholder="Zone de texte..."></textarea>
+  <button class="send-btn" id="sendBtn">Envoyer</button>
+
+  <div class="divider"></div>
+
+  <h1>Reçu</h1>
+  <div class="btn-grid" id="recuGrid">
+    <div class="indicator yellow" data-val="prepare">Prépare-toi</div>
+    <div class="indicator green" data-val="go">GO</div>
+    <div class="indicator red" data-val="stop">STOP</div>
+    <div class="indicator red" data-val="pasPret">Pas Prêt</div>
+    <div></div>
+    <div class="indicator green" data-val="pret">Prêt</div>
+  </div>
+  <div class="received-box" id="receivedText">Texte reçu</div>
+</div>
+
+<script type="module">
+  const CODE_ACCES = "0402";
+
+  const codeScreen = document.getElementById("codeScreen");
+  const identityScreen = document.getElementById("identityScreen");
+  const mainApp = document.getElementById("mainApp");
+  const statusEl = document.getElementById("status");
+
+  const IDENTITES = { julien: "freddy", freddy: "julien" };
+
+  function getMoi() {
+    return localStorage.getItem("moi");
+  }
+
+  function codeValide() {
+    return localStorage.getItem("codeOk") === "1";
+  }
+
+  function afficherApp() {
+    codeScreen.classList.add("hidden");
+    identityScreen.classList.add("hidden");
+    mainApp.classList.remove("hidden");
+    demarrerFirebase();
+  }
+
+  function afficherIdentite() {
+    codeScreen.classList.add("hidden");
+    identityScreen.classList.remove("hidden");
+  }
+
+  document.getElementById("codeSubmit").addEventListener("click", validerCode);
+  document.getElementById("codeInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") validerCode();
+  });
+
+  function validerCode() {
+    const saisi = document.getElementById("codeInput").value.trim();
+    if (saisi === CODE_ACCES) {
+      localStorage.setItem("codeOk", "1");
+      if (getMoi()) {
+        afficherApp();
+      } else {
+        afficherIdentite();
+      }
+    } else {
+      document.getElementById("codeError").classList.remove("hidden");
+    }
+  }
+
+  document.querySelectorAll(".identity-btn[data-id]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      localStorage.setItem("moi", btn.dataset.id);
+      afficherApp();
+    });
+  });
+
+  document.getElementById("switchUser").addEventListener("click", () => {
+    localStorage.removeItem("moi");
+    location.reload();
+  });
+
+  // Au chargement : passer directement à l'étape suivante si déjà validée
+  if (codeValide()) {
+    if (getMoi()) {
+      afficherApp();
+    } else {
+      afficherIdentite();
+    }
+  }
+
+  async function demarrerFirebase() {
+    const moi = getMoi();
+    const autre = IDENTITES[moi];
+
+    let firebaseConfig, initializeApp, getDatabase, ref, set, onValue;
+    try {
+      const mod = await import("./firebase-config.js");
+      firebaseConfig = mod.firebaseConfig;
+      ({ initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"));
+      ({ getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"));
+    } catch (e) {
+      statusEl.textContent = "Erreur de chargement : " + e.message;
+      statusEl.style.color = "#ff6b6b";
+      throw e;
+    }
+
+    let app, db;
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+    } catch (e) {
+      statusEl.textContent = "Erreur config Firebase : " + e.message;
+      statusEl.style.color = "#ff6b6b";
+      throw e;
+    }
+
+    onValue(ref(db, ".info/connected"), (snap) => {
+      if (snap.val() === true) {
+        statusEl.textContent = "✓ Connecté (" + moi + ")";
+        statusEl.classList.add("connected");
+      } else {
+        statusEl.textContent = "Connexion...";
+        statusEl.classList.remove("connected");
+      }
+    });
+
+    // Le lien "Réglages sono" n'apparaît que sur la page de Freddy
+    if (moi === "freddy") {
+      document.getElementById("sonoLink").classList.remove("hidden");
+    }
+
+    // Popup quand l'autre personne appuie sur un bouton de la page sono (commande)
+    let commandeInitiale = true;
+    let dernierTimestamp = null;
+    onValue(ref(db, "participants/" + autre + "/commande"), (snap) => {
+      const val = snap.val();
+      if (!val) return;
+      if (commandeInitiale) {
+        commandeInitiale = false;
+        dernierTimestamp = val.timestamp;
+        return;
+      }
+      if (val.timestamp !== dernierTimestamp) {
+        dernierTimestamp = val.timestamp;
+        afficherToast(val.valeur);
+      }
+    });
+
+    function afficherToast(texte) {
+      const toast = document.getElementById("toast");
+      toast.textContent = texte;
+      toast.classList.add("show");
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    // Envoi : boutons d'état
+    document.querySelectorAll(".btn-grid .action-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        set(ref(db, "participants/" + moi + "/etat"), {
+          valeur: btn.dataset.val,
+          timestamp: Date.now()
+        });
+        document.querySelectorAll(".btn-grid .action-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // Envoi : message texte
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      const input = document.getElementById("messageInput");
+      const texte = input.value.trim();
+      if (!texte) return;
+      set(ref(db, "participants/" + moi + "/message"), {
+        valeur: texte,
+        timestamp: Date.now()
+      });
+      input.value = "";
+    });
+
+    // Reçu : état de l'autre -> allumer le bon indicateur
+    onValue(ref(db, "participants/" + autre + "/etat/valeur"), (snap) => {
+      const val = snap.val();
+      document.querySelectorAll("#recuGrid .indicator").forEach(el => {
+        el.classList.toggle("active", el.dataset.val === val);
+      });
+    });
+
+    // Reçu : message de l'autre
+    onValue(ref(db, "participants/" + autre + "/message/valeur"), (snap) => {
+      const val = snap.val();
+      document.getElementById("receivedText").textContent = val || "Texte reçu";
+    });
+
+    // Rétablir l'état actif de mes propres boutons si je recharge la page
+    onValue(ref(db, "participants/" + moi + "/etat/valeur"), (snap) => {
+      const val = snap.val();
+      if (!val) return;
+      document.querySelectorAll(".btn-grid .action-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.val === val);
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
