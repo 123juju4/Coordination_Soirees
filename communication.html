@@ -329,7 +329,7 @@
     const historyQuery = query(
       ref(db, "participants/" + autre + "/etatHistory"),
       orderByChild("timestamp"),
-      limitToLast(12)
+      limitToLast(3)
     );
 
     onChildAdded(historyQuery, (snap) => {
@@ -356,7 +356,7 @@
       }
       history.appendChild(item);
 
-      while (history.children.length > 12) history.removeChild(history.firstElementChild);
+      while (history.children.length > 3) history.removeChild(history.firstElementChild);
       history.scrollTop = history.scrollHeight;
     }
 
