@@ -1,0 +1,87 @@
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #f1f1f1;
+  margin: 0;
+  padding: 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 1.3rem;
+  text-align: center;
+  color: #e0c9a6;
+  margin-bottom: 4px;
+}
+.status {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 20px;
+}
+.status.connected { color: #4caf50; }
+section {
+  background: #24243e;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: #b8a88e;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.etapes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+button.etape-btn {
+  padding: 14px 8px;
+  border: none;
+  border-radius: 8px;
+  background: #3a3a5c;
+  color: #f1f1f1;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button.etape-btn:active { background: #e0c9a6; color: #1a1a2e; }
+button.etape-btn.active { background: #e0c9a6; color: #1a1a2e; font-weight: bold; }
+
+textarea, input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #1a1a2e;
+  color: #f1f1f1;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid #444;
+}
+textarea { resize: none; height: 60px; }
+
+.send-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #e0c9a6;
+  color: #1a1a2e;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.send-btn:active { opacity: 0.8; }
+
+.current-msg {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 8px;
+  min-height: 1em;
+}
